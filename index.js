@@ -3,6 +3,9 @@ const cors = require("cors")
 const dotenv = require("dotenv").config()
 const connectToDB = require("./dbase/datafile")
 const routes = require("./routes/userRoutes")
+const routeres = require("./routes/recipesRoute")
+const auth = require('./middlewares/verifytoken')
+
 
 
 
@@ -30,6 +33,11 @@ app.get("/", (req, res)=>{
 })
 
 app.use("/api", routes)
+
+app.use("/api", routeres)
+
+app.use('/api', auth)
+
 
 app.use((req, res)=>{
   res.status(404).json({message:"Sorry, this path doesn't exist!"})

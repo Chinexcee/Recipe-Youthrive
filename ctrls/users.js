@@ -1,7 +1,10 @@
 const Users = require("../model/usersModel")
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
-const middlewares = require("../middlewares")
+const { sendEmail } = require("../utils")
+
+
+
 
 const usersRegister = async(req, res)=>{
   // Fetching user details
@@ -9,6 +12,8 @@ const usersRegister = async(req, res)=>{
 
   // Validation to ensure details are supplied
 try {
+
+
   // if(!userName){
   //   return res.status(400).json({message: "Choose a username"})
   // }
@@ -33,7 +38,34 @@ try {
   const newUser = new Users({ username, email, password: cryptedPassword, role, phoneNumber})
  
   await newUser.save()
- return res.status(200).json(`Your account has been created ${username}`)
+
+  // const response = await sendEmail(username, email, subjectOfMail)
+
+  const subjectOfMail = {
+    from: `${process.env.EMAIL}`,
+    to: userEmail,
+    subject: subjectOfMail,
+    html: ` 
+        <div>
+            <h1> Hello ${username} </h1>
+            <h2> We are excited to have you join our Recipe creators! </h2>
+
+            <p>gyfvtf tyftyf tyftgvgcvg</p>
+
+            
+
+            <h6>Thanks You!</h6>
+        </div>
+    `
+}
+
+  return res.status(200).json(`Your account has been created ${username}`)
+
+  // return res.status(200).json({
+  //     message: "Successful"
+  // })
+
+ 
 } 
 catch (error) {
   res.status(400).json(error.message)
@@ -49,29 +81,13 @@ const userLogin = async(req, res)=>{
 
   const { email, password, username} = req.body
 
-  if(!email || !password){
-    return res.status(400).json({message: "All fields required"})
-  }
 
-  // Running a check if user exist in database
+  // // Running a check if user exist in database
 
   const user = await Users.findOne({email})
 
-  if(!user){
-    return res.status(400).json({message: "User does not exist"})
-
-    
-  }
-
-  // password match wth the hashed
-  const matchingPassword = bcrypt.compare(password, user.password)
-
-  if(!matchingPassword){
-    return res.status(402).json({message:"Password or email not correct"})
-  }
-
-
-  // Generating token to grant access to the user
+  
+  //   // Generating token to grant access to the user
 
   const userLoad = {
     id: user._id,
@@ -79,19 +95,13 @@ const userLogin = async(req, res)=>{
     username: user.username
   }
 
-  const accessToken = jwt.sign(userLoad, process.env.ACCESS_TOKEN, {expiresIn: "5m"})
-
-  // res.send({accessToken})
-
-
 
   return res.status(200).json({
     message: `Welcome back ${username}`,
-    user
+    userLoad
   })
-}
-
-
+  }
+ 
 
 // Forgot password
 
@@ -101,13 +111,13 @@ const forgotPassword = async(req, res)=>{
 
   subjectOfMail } = req.body
 
-  const mailSample = "info@silverblue.com"
+  // const mailSample = "info@silverblue.com"
 
-  const user = await Users.findOne({mailSample})
+  const user = await Users.findOne({email})
   
   if(!user){
 
-    return res.status(402).json({message: "User doesn't exist"})
+    return res.status(404).json({message: "User doesn't exist"})
 
   }
 
@@ -120,12 +130,58 @@ const forgotPassword = async(req, res)=>{
 
   const accessToken = jwt.sign(userPayLoad, token, {expiresIn: "10m"})
 
-  const _URL = `www.bluesilver.com/${accessToken}`
+  const _URL = `www.bluesilver.com/${token}`
 
 
   // Sending email for verification link
 
-   
+  const response = await sendEmail(username, email, subjectOfMail)
+
+
+
+  return res.status(200).json({
+      message: "Successful"
+  })
+
+
+}
+
+const resetPassword = async (req, res)=>{
+
+
+  try {
+
+      //Should be coming with the access Token generated
+
+      const { password, email } = req.body
+
+      const user = await Users.findOne({ email })
+
+      if(!user){
+          return res.status(404).json({message: "User not found"})
+      }
+      console.log(hashedPassword)
+
+      const hashedPassword = await bcrypt.hash(password, 12)
+
+      user.password = hashedPassword
+
+      await user.save()
+
+
+
+      return res.status(200).json({
+          message: "Successful"
+      })
+
+    
+      
+
+      } catch (error) {
+          return res.status(500).json({message: error.message})
+      }
+      
+
 
 }
 
@@ -195,9 +251,13 @@ const deleteUser = async(req, res)=>{
 module.exports = {
   usersRegister,
   userLogin,
+  forgotPassword,
+  resetPassword,
   getAllUsers,
   onlyOneUser,
   updateUserPassword,
   deleteUser
+  
+  
 }
 
