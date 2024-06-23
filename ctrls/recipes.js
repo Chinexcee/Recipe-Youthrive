@@ -3,6 +3,7 @@ const recipes = require("../model/recipeModel")
 const Users = require("../model/usersModel")
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
+const { removeFavorites } = require("./favorites")
 
 
 
@@ -83,11 +84,16 @@ const deleteRecipe = async(req, res)=>{
 const addTags = async(req, res)=>{
   const { id } = req.params
   const recipeTags = await recipes.findById(id)
-  recipeTags.tags.push("") = req.body.tags
+  
+  recipeTags.tags.push() = req.body.tags
   await recipeTags.save()
 
   return res.status(200).json({message: 'Tags added successfully!', recipeTags})
 }
+
+
+
+
 
 
 module.exports = {
@@ -97,5 +103,6 @@ module.exports = {
   updatingRecipes,
   deleteRecipe, 
   addTags
+  
 
 }

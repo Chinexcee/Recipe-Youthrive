@@ -4,6 +4,7 @@ const dotenv = require("dotenv").config()
 const connectToDB = require("./dbase/datafile")
 const routes = require("./routes/userRoutes")
 const routeres = require("./routes/recipesRoute")
+const routee = require("./routes/favoritesRoute")
 const auth = require('./middlewares/verifytoken')
 
 
@@ -35,6 +36,8 @@ app.get("/", (req, res)=>{
 app.use("/api", routes)
 
 app.use("/api", routeres)
+
+app.use("/api", routee)
 
 app.use('/api', auth)
 

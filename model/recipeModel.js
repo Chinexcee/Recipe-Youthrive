@@ -16,10 +16,7 @@ const recipeSchema = new mongoose.Schema({
       },
       categories:{
         type: String},
-        tags:[{type: String}],
-        
-      
-      favorites:[{type: String}]
+        tags:[String],
       
     
     
